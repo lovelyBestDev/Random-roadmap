@@ -1,0 +1,34 @@
+.component-building-1 {
+    background-image: url('../asset/images/building_1.png');
+	background-size: 100% 100%;
+    position: absolute;
+}
+
+.component-building-2 {
+    background-image: url('../asset/images/building_2.png');
+	background-size: 100% 100%;
+    position: absolute;
+
+    background-color: grey;
+}
+
+.component-building-3 {
+    background-image: url('../asset/images/building_3.png');
+	background-size: 100% 100%;
+    position: absolute;
+}
+
+.component-building-4 {
+    background-image: url('../asset/images/building_4.png');
+	background-size: 100% 100%;
+    position: absolute;
+}
+
+
+html, body
+{
+    height: 100%;
+    margin: 0;
+    padding: 0px;
+    overflow: hidden;
+}
