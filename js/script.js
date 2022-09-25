@@ -1,12 +1,12 @@
 const globalData = {
-    'buildingSize': 245,
+    'buildingSize': 155,
     'buildingScale': 1,
     'buildingKind': 6,
-    'roadWidth': 10,
-    'totalBuildingCnt': 300,
+    'roadWidth': 20,
+    'totalBuildingCnt': 3000,
     'initialBuildingCnt': 4,
-    'wide': 2000,
-    'tileCnt': 250
+    'wide': 20000,
+    'tileCnt': 500
 }
 
 let cameraOffset = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
@@ -14,7 +14,7 @@ let cameraOffset_pre = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 let cameraZoom = 1
 let MAX_ZOOM = 5
 let MIN_ZOOM = 0.03
-let SCROLL_SENSITIVITY = 0.0005
+let SCROLL_SENSITIVITY = 0.0001
 
 const canvas = document.getElementById("myCanvas");
 const ctx = canvas.getContext("2d");
@@ -23,16 +23,13 @@ canvas.height = window.innerHeight
 
 let totalLineInfo = [];
 let totalPointInfo = [];
-
 let drawPointsArr = []
-
 let buildingPosArr = []
-let buildingSideArr = []
-let movingPoint = []
-
-let borderNum = -1;
+let movingPoints = []
 
 let scale_info;
+
+let count = 0
 
 window.addEventListener("load", function () {
     totalPointInfo = getTotalPointInfo()
@@ -53,43 +50,39 @@ window.addEventListener("load", function () {
 
     this.setInterval(() => {
         draw()
-    }, 20)
+    }, 30)
 })
 
 
+class CMovingPointer {
+    constructor(x, y, dirX, dirY) {
+        this.posX = x;
+        this.posY = y;
+        this.speedX = dirX;
+        this.speedY = dirY;
+        this.maxValue = 999
+        this.minValue = 0
+    }
+
+    moving() {
+        this.posX += this.speedX;
+        this.posY += this.speedY;
+
+        if (this.posX == this.minValue || this.posX == this.maxValue
+            || this.posY == this.minValue || this.posY == this.maxValue) {
+            this.speedX = -this.speedX
+            this.speedY = -this.speedY
+        }
+    }
+
+    changeDirection(newX, newY) {
+        this.speedX = newX;
+        this.speedY = newY;
+    }
+}
+
+
 function init() {
-    // for (var i = 0; i < globalData.totalBuildingCnt; i++) {
-    //     var randomPosition = {
-    //         'x': 0,
-    //         'y': 0
-    //     };
-    //     while (true) {
-    //         // if (i < globalData.initialBuildingCnt) {
-    //         //     randomPosition = {
-    //         //         'x': Math.random() * (this.window.innerWidth - globalData.buildingSize) + globalData.buildingSize / 2,
-    //         //         'y': Math.random() * (this.window.innerHeight - globalData.buildingSize) + globalData.buildingSize / 2
-    //         //     }
-    //         // } else {
-    //             randomPosition = {
-    //                 'x': Math.random() * 2 * (globalData.wide - globalData.buildingSize) - (globalData.wide - globalData.buildingSize),
-    //                 'y': Math.random() * 2 * (globalData.wide - globalData.buildingSize) - (globalData.wide - globalData.buildingSize)
-    //             }
-    //         // }
-
-    //         if (checkingRandomPositionAvailable(randomPosition)) {
-    //             break;
-    //         }
-    //     }
-    //     buildingPosArr.push({ x: randomPosition.x, y: randomPosition.y })
-    //     buildingSideArr.push({
-    //         't': true,
-    //         'l': true,
-    //         'r': true,
-    //         'd': true
-    //     })
-    // }
-
-
     for (var i = -globalData.wide + 1; i <= globalData.wide; i += globalData.wide / globalData.tileCnt) {
         totalLineInfo.push({
             'from': {
@@ -113,92 +106,79 @@ function init() {
             }
         })
     }
-    borderNum = totalLineInfo.length
-
-    // getBuildingPositionInfo()
 }
 
 
-// function checkingRandomPositionAvailable(obj) {
-//     for (var i = 0; i < buildingPosArr.length; i++) {
-//         if (Math.abs(buildingPosArr[i].x - obj.x) + Math.abs(buildingPosArr[i].y - obj.y) < 2 * globalData.buildingSize) {
-//             return false;
+// function getBuildingPositionInfo() {
+//     var minDistance_building = 2 * Math.pow(globalData.buildingSize, 2)
+//     var minDistance_road = 2 * Math.pow((2 * Math.sqrt(3) * globalData.roadWidth), 2)
+
+//     var wide = globalData.wide - globalData.buildingSize
+//     for (var i = 0; i < globalData.totalBuildingCnt; i++) {
+//         var temp;
+//         var cnt = 0
+//         while (true) {
+//             temp = {
+//                 'x': Math.random() * 2 * wide - wide,
+//                 'y': Math.random() * 2 * wide - wide,
+//             }
+//             if (checkingDelBuildings(temp) && checkingAcrossBuildingAndLine(temp)) {
+//                 break;
+//             }
+//             cnt++;
+//             if (cnt == 1000) {
+//                 break;
+//             }
 //         }
+//         if (cnt < 1000) {
+//             buildingPosArr.push({ ...temp })
+//         }
+
 //     }
-//     return true;
+
+//     function checkingDelBuildings(position) {
+//         for (var i = 0; i < buildingPosArr.length; i++) {
+//             if (Math.pow((buildingPosArr[i].x - position.x), 2) + Math.pow((buildingPosArr[i].y - position.y), 2) < minDistance_building) {
+//                 return false;
+//             }
+//         }
+//         return true;
+//     }
+
+//     function checkingAcrossBuildingAndLine(position) {
+//         for (var i = 0; i < globalData.buildingSize; i++) {
+//             for (var k = 0; k < drawPointsArr.length; k++) {
+//                 var temp = {
+//                     'x': position.x + i,
+//                     'y': position.y
+//                 }
+//                 var temp_1 = {
+//                     'x': position.x + i,
+//                     'y': position.y + (globalData.buildingSize - 1)
+//                 }
+//                 var temp_2 = {
+//                     'x': position.x,
+//                     'y': position.y + i
+//                 }
+//                 var temp_3 = {
+//                     'x': position.x + (globalData.buildingSize - 1),
+//                     'y': position.y + i
+//                 }
+//                 if (distanceBetTwoPoints(drawPointsArr[k], temp) < minDistance_road
+//                     || distanceBetTwoPoints(drawPointsArr[k], temp_1) < minDistance_road
+//                     || distanceBetTwoPoints(drawPointsArr[k], temp_2) < minDistance_road
+//                     || distanceBetTwoPoints(drawPointsArr[k], temp_3) < minDistance_road) {
+//                     return false
+//                 }
+//             }
+//         }
+//         return true;
+//     }
+
+//     function distanceBetTwoPoints(point1, point2) {
+//         return Math.pow((point1.x - point2.x), 2) + Math.pow((point1.y - point2.y), 2)
+//     }
 // }
-
-
-function getBuildingPositionInfo() {
-    var minDistance_building = 2 * Math.pow(globalData.buildingSize, 2)
-    var minDistance_road = 2 * Math.pow((2 * Math.sqrt(3) * globalData.roadWidth), 2)
-
-    var wide = globalData.wide - globalData.buildingSize
-    for (var i = 0; i < globalData.totalBuildingCnt; i++) {
-        var temp;
-        var cnt = 0
-        while (true) {
-            temp = {
-                'x': Math.random() * 2 * wide - wide,
-                'y': Math.random() * 2 * wide - wide,
-            }
-            if (checkingDelBuildings(temp) && checkingAcrossBuildingAndLine(temp)) {
-                break;
-            }
-            cnt++;
-            if (cnt == 1000) {
-                break;
-            }
-        }
-        if (cnt < 1000) {
-            buildingPosArr.push({ ...temp })
-        }
-
-    }
-
-    function checkingDelBuildings(position) {
-        for (var i = 0; i < buildingPosArr.length; i++) {
-            if (Math.pow((buildingPosArr[i].x - position.x), 2) + Math.pow((buildingPosArr[i].y - position.y), 2) < minDistance_building) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    function checkingAcrossBuildingAndLine(position) {
-        for (var i = 0; i < globalData.buildingSize; i++) {
-            for (var k = 0; k < drawPointsArr.length; k++) {
-                var temp = {
-                    'x': position.x + i,
-                    'y': position.y
-                }
-                var temp_1 = {
-                    'x': position.x + i,
-                    'y': position.y + (globalData.buildingSize - 1)
-                }
-                var temp_2 = {
-                    'x': position.x,
-                    'y': position.y + i
-                }
-                var temp_3 = {
-                    'x': position.x + (globalData.buildingSize - 1),
-                    'y': position.y + i
-                }
-                if (distanceBetTwoPoints(drawPointsArr[k], temp) < minDistance_road
-                    || distanceBetTwoPoints(drawPointsArr[k], temp_1) < minDistance_road
-                    || distanceBetTwoPoints(drawPointsArr[k], temp_2) < minDistance_road
-                    || distanceBetTwoPoints(drawPointsArr[k], temp_3) < minDistance_road) {
-                    return false
-                }
-            }
-        }
-        return true;
-    }
-
-    function distanceBetTwoPoints(point1, point2) {
-        return Math.pow((point1.x - point2.x), 2) + Math.pow((point1.y - point2.y), 2)
-    }
-}
 
 
 function getTotalPointInfo() {
@@ -231,11 +211,11 @@ function getTotalPointInfo() {
     })
     var breakingPoints = [];
 
-    var maxHV = 30;
-    var minMovingLength = 50;
-    var minBetBorderPoints = 2 * Math.pow(40, 2);
-    var minBetMovingPointAndBreakPoint = 2 * Math.pow(10, 2);
-    var checkingUpTiles = 20
+    var maxHV = 300;
+    var minMovingLength = 20;
+    var minBetBorderPoints = 2 * Math.pow(10, 2);
+    var minBetMovingPointAndBreakPoint = 2 * Math.pow(5, 2);
+    var checkingUpTiles = 10
     var side;
 
     for (var index = 0; index < maxHV; index++) {
@@ -363,6 +343,7 @@ function getTotalPointInfo() {
                 }
 
                 breakingPoints.push({ ...newBreakingPoint })
+                pointInfo[newBreakingPoint.x][newBreakingPoint.y] = 1;
                 break;
             }
 
@@ -374,7 +355,7 @@ function getTotalPointInfo() {
 
 
             if (movingCnt > minMovingLength) {
-                breakingFlag = Math.floor(100 * Math.random() / 4)
+                breakingFlag = Math.floor(50 * Math.random() / 4)
                 if (breakingFlag == 0) {
                     if (!checkBreaking) {
                         checkBreaking = true;
@@ -398,32 +379,34 @@ function getTotalPointInfo() {
         }
     }
 
-    // addCircleRoadOnEmptySpace();
 
-    var ttt = 100;
+
+    var ttt = 70;
     for (var i = ttt; i < pointInfo.length - ttt; i++) {
         for (var j = ttt; j < pointInfo[i].length - ttt; j++) {
             var temp = {
                 'x': i,
                 'y': j
             }
-            if (checkingSpace(temp, ttt)) {
+            if (pointInfo[i][j] == 0 && checkingSpace(temp, ttt)) {
                 var rand = 3 * Math.random()
                 if (rand < 1) {
                     var r = Math.floor(Math.random() * Math.floor(ttt / 6) + Math.floor(ttt / 4))
                     var X = i + Math.floor(ttt / 2)
                     var Y = j + Math.floor(ttt / 2)
-                    pointInfo[X][Y] = r + 50
+                    pointInfo[X][Y] = r + 1000
+
+                    var temp_del = 5;
+                    var rand_1 = Math.floor(Math.random() * 4)
 
                     {
-                        // rand = 2 * Math.random()
-                        // if(rand < 1) {
-                            var temp = r - 6;
-                            while(true) {
-                                if(X + temp >= len) {
+                        if (rand_1 != 0) {
+                            var temp = r - temp_del;
+                            while (true) {
+                                if (X + temp >= len) {
                                     break
                                 }
-                                if(pointInfo[X + temp][Y] == 0) {
+                                if (pointInfo[X + temp][Y] == 0) {
                                     pointInfo[X + temp][Y] = 1
                                 } else {
                                     breakingPoints.push({
@@ -434,56 +417,53 @@ function getTotalPointInfo() {
                                 }
                                 temp++;
                             }
-                        // }
-                            
-                        // rand = 2 * Math.random()
-                        // if(rand < 1) {
-                            temp = r - 6;
-                            while(true) {
-                                if(Y + temp >= len) {
-                                    break
-                                }
-                                if(pointInfo[X][Y + temp] == 0) {
-                                    pointInfo[X][Y + temp] = 1
-                                } else {
-                                    breakingPoints.push({
-                                        'x': X,
-                                        'y': Y + temp
-                                    })
-                                    break;
-                                }
-                                temp++;
-                            }
-                        // }
-                            
-                        // rand = 2 * Math.random()
-                        // if(rand < 1) {
-                            temp = -r + 6;
-                            while(true) {
-                                if(X + temp < 0) {
-                                    break
-                                }
-                                if(pointInfo[X + temp][Y] == 0) {
-                                    pointInfo[X + temp][Y] = 1
-                                } else {
-                                    breakingPoints.push({
-                                        'x': X + temp,
-                                        'y': Y
-                                    })
-                                    break;
-                                }
-                                temp--;
-                            }
-                        // }
+                        }
 
-                        // rand = 2 * Math.random()
-                        // if(rand < 1) {
-                            temp = -r + 6;
-                            while(true) {
-                                if(Y + temp < 0) {
+                        if (rand_1 != 1) {
+                            temp = r - temp_del;
+                            while (true) {
+                                if (Y + temp >= len) {
                                     break
                                 }
-                                if(pointInfo[X][Y + temp] == 0) {
+                                if (pointInfo[X][Y + temp] == 0) {
+                                    pointInfo[X][Y + temp] = 1
+                                } else {
+                                    breakingPoints.push({
+                                        'x': X,
+                                        'y': Y + temp
+                                    })
+                                    break;
+                                }
+                                temp++;
+                            }
+                        }
+
+                        if (rand_1 != 2) {
+                            temp = -r + temp_del;
+                            while (true) {
+                                if (X + temp < 0) {
+                                    break
+                                }
+                                if (pointInfo[X + temp][Y] == 0) {
+                                    pointInfo[X + temp][Y] = 1
+                                } else {
+                                    breakingPoints.push({
+                                        'x': X + temp,
+                                        'y': Y
+                                    })
+                                    break;
+                                }
+                                temp--;
+                            }
+                        }
+
+                        if (rand_1 != 3) {
+                            temp = -r + temp_del;
+                            while (true) {
+                                if (Y + temp < 0) {
+                                    break
+                                }
+                                if (pointInfo[X][Y + temp] == 0) {
                                     pointInfo[X][Y + temp] = 1
                                 } else {
                                     breakingPoints.push({
@@ -494,7 +474,7 @@ function getTotalPointInfo() {
                                 }
                                 temp--;
                             }
-                        // }
+                        }
 
                         fillSpace({
                             'x': X,
@@ -506,34 +486,60 @@ function getTotalPointInfo() {
         }
     }
 
-    for (var i = 0; i < breakingPoints.length; i++) {
-        if (breakingPoints[i].x > 3 && breakingPoints[i].x < len - 4
-            && breakingPoints[i].y > 3 && breakingPoints[i].y < len - 4) {
-            pointInfo[breakingPoints[i].x][breakingPoints[i].y] = setBreakingPointValue(breakingPoints[i])
-        }
-    }
-    for (var i = 0; i < breakingPoints.length; i++) {
-        for (var j = 1; j < 3; j++) {
-            if (breakingPoints[i].x >= j && breakingPoints[i].x < len - j
-                && breakingPoints[i].y >= j && breakingPoints[i].y < len - j) {
-                pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x - j][breakingPoints[i].y]
-                pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y - j]
-                pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x + j][breakingPoints[i].y]
-                pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y + j]
+    for (var i = 1; i < pointInfo.length - 1; i++) {
+        for (var j = 1; j < pointInfo[i].length - 1; j++) {
+            if (pointInfo[i][j] == 1) {
+                pointInfo[i][j] = setBreakingPointValue({
+                    'x': i,
+                    'y': j
+                })
             }
         }
     }
 
+    for (var i = 0; i < breakingPoints.length; i++) {
+        if (breakingPoints[i].x > 3 && breakingPoints[i].x < len - 4
+            && breakingPoints[i].y > 3 && breakingPoints[i].y < len - 4) {
+            // pointInfo[breakingPoints[i].x][breakingPoints[i].y] = setBreakingPointValue(breakingPoints[i])
+            // pointInfo[breakingPoints[i].x][breakingPoints[i].y] = 2
+
+            var dirArr = [
+                { 'x': 1, 'y': 0 },
+                { 'x': -1, 'y': 0 },
+                { 'x': 0, 'y': 1 },
+                { 'x': 0, 'y': -1 },
+            ];
+            while (true) {
+                var rand = Math.floor(Math.random() * 4)
+                if (pointInfo[breakingPoints[i].x + dirArr[rand].x][breakingPoints[i].y + dirArr[rand].y] != 0) {
+                    movingPoints.push(new CMovingPointer(breakingPoints[i].x, breakingPoints[i].y, dirArr[rand].x, dirArr[rand].y))
+                    break;
+                }
+            }
+        }
+    }
+
+    // for (var i = 0; i < breakingPoints.length; i++) {
+    //     for (var j = 1; j < 3; j++) {
+    //         if (breakingPoints[i].x >= j && breakingPoints[i].x < len - j
+    //             && breakingPoints[i].y >= j && breakingPoints[i].y < len - j) {
+    //             pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x - j][breakingPoints[i].y]
+    //             pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y - j]
+    //             pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x + j][breakingPoints[i].y]
+    //             pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y + j]
+    //         }
+    //     }
+    // }
+
+
+
     return pointInfo;
 
-    // function addCircleRoadOnEmptySpace() {
-
-    // }
 
     function fillSpace(point, r) {
         for (var i = -r + 1; i < r; i++) {
             for (var j = -r + 1; j < r; j++) {
-                if(i != 0 && j != 0) {
+                if (i != 0 && j != 0) {
                     pointInfo[point.x + i][point.y + j] = -1
 
                 }
@@ -554,17 +560,32 @@ function getTotalPointInfo() {
     }
 
     function setBreakingPointValue(point) {
+        // var temp_value = 1;
+        // if (pointInfo[point.x - 1][point.y] == 1 && pointInfo[point.x][point.y - 1] == 1) {
+        //     temp_value *= 2;
+        // }
+        // if (pointInfo[point.x][point.y - 1] == 1 && pointInfo[point.x + 1][point.y] == 1) {
+        //     temp_value *= 3;
+        // }
+        // if (pointInfo[point.x + 1][point.y] == 1 && pointInfo[point.x][point.y + 1] == 1) {
+        //     temp_value *= 5;
+        // }
+        // if (pointInfo[point.x][point.y + 1] == 1 && pointInfo[point.x - 1][point.y] == 1) {
+        //     temp_value *= 7;
+        // }
+        // return temp_value;
+
         var temp_value = 1;
-        if (pointInfo[point.x - 1][point.y] == 1 && pointInfo[point.x][point.y - 1] == 1) {
+        if (pointInfo[point.x - 1][point.y] != 0 && pointInfo[point.x - 1][point.y] != -1) {
             temp_value *= 2;
         }
-        if (pointInfo[point.x][point.y - 1] == 1 && pointInfo[point.x + 1][point.y] == 1) {
+        if (pointInfo[point.x][point.y - 1] != 0 && pointInfo[point.x][point.y - 1] != -1) {
             temp_value *= 3;
         }
-        if (pointInfo[point.x + 1][point.y] == 1 && pointInfo[point.x][point.y + 1] == 1) {
+        if (pointInfo[point.x + 1][point.y] != 0 && pointInfo[point.x + 1][point.y] != -1) {
             temp_value *= 5;
         }
-        if (pointInfo[point.x][point.y + 1] == 1 && pointInfo[point.x - 1][point.y] == 1) {
+        if (pointInfo[point.x][point.y + 1] != 0 && pointInfo[point.x][point.y + 1] != -1) {
             temp_value *= 7;
         }
         return temp_value;
@@ -720,27 +741,25 @@ function getTotalPointInfo() {
 // }
 
 
-
-
-function getCurveLine(start, end) {
-    if (Math.abs(buildingPosArr[start].x - buildingPosArr[end].x) > globalData.buildingSize
-        && Math.abs(buildingPosArr[start].y - buildingPosArr[end].y) > globalData.buildingSize) {
-        totalLineInfo.push({
-            'from': {
-                'x': buildingPosArr[start].x,
-                'y': buildingPosArr[start].y
-            },
-            'mid': {
-                'x': buildingPosArr[start].x,
-                'y': buildingPosArr[end].y
-            },
-            'to': {
-                'x': buildingPosArr[end].x,
-                'y': buildingPosArr[end].y,
-            }
-        })
-    }
-}
+// function getCurveLine(start, end) {
+//     if (Math.abs(buildingPosArr[start].x - buildingPosArr[end].x) > globalData.buildingSize
+//         && Math.abs(buildingPosArr[start].y - buildingPosArr[end].y) > globalData.buildingSize) {
+//         totalLineInfo.push({
+//             'from': {
+//                 'x': buildingPosArr[start].x,
+//                 'y': buildingPosArr[start].y
+//             },
+//             'mid': {
+//                 'x': buildingPosArr[start].x,
+//                 'y': buildingPosArr[end].y
+//             },
+//             'to': {
+//                 'x': buildingPosArr[end].x,
+//                 'y': buildingPosArr[end].y,
+//             }
+//         })
+//     }
+// }
 
 function convertPosition(x, y) {
     var newPosition = {
@@ -752,6 +771,7 @@ function convertPosition(x, y) {
 }
 
 function draw() {
+    count = (count + 1) % 4
     ctx.translate(-cameraZoom * cameraOffset_pre.x, -cameraZoom * cameraOffset_pre.y)
     ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y))
 
@@ -796,10 +816,9 @@ function draw() {
 
 
     ctx.strokeStyle = "#b2ae9d";
-    ctx.lineWidth = cameraZoom / 2;
+    ctx.lineWidth = cameraZoom;
     ctx.beginPath();
-    // console.log(borderNum)
-    for (var i = 0; i < borderNum; i++) {
+    for (var i = 0; i < totalLineInfo.length; i++) {
         var fromPos = convertPosition(totalLineInfo[i].from.x, totalLineInfo[i].from.y)
         var toPos = convertPosition(totalLineInfo[i].to.x, totalLineInfo[i].to.y)
 
@@ -815,51 +834,59 @@ function draw() {
 
 
 
-    temp_width = cameraZoom * globalData.roadWidth * 2
+    temp_width = cameraZoom * globalData.roadWidth
 
     for (var i = 0; i < drawPointsArr.length; i++) {
         var value = totalPointInfo[(drawPointsArr[i].x - globalData.roadWidth / 2) / scale_info][(drawPointsArr[i].y - globalData.roadWidth / 2) / scale_info]
         var newPosition = convertPosition(drawPointsArr[i].x - globalData.wide, drawPointsArr[i].y - globalData.wide)
-        if (value != 1 && value != 210) {
-            if(value != -1) {
-                if (value >= 50) {
-                    ctx.lineWidth = 1.8 * temp_width;
+        if (value != 1) {
+            if (value != -1) {
+                if (value >= 1000) {
+                    var temp_value = value - 1000
+                    ctx.lineWidth = 1.75 * temp_width;
                     ctx.strokeStyle = "grey"
 
                     ctx.beginPath();
-                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY - (value - 50) * scale_info));
-                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX + Math.sqrt(3) * (value - 50) * scale_info - 10), cameraZoom * (newPosition.convertedY - (value - 50) * scale_info + 10),
-                        cameraZoom * (newPosition.convertedX + Math.sqrt(3) * (value - 50) * scale_info), cameraZoom * newPosition.convertedY);
+                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY - temp_value * scale_info));
+                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX + Math.sqrt(3) * temp_value * scale_info - 10), cameraZoom * (newPosition.convertedY - temp_value * scale_info + 10),
+                        cameraZoom * (newPosition.convertedX + Math.sqrt(3) * temp_value * scale_info), cameraZoom * newPosition.convertedY);
                     ctx.stroke();
 
                     ctx.beginPath();
-                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY - (value - 50) * scale_info));
-                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX - Math.sqrt(3) * (value - 50) * scale_info + 10), cameraZoom * (newPosition.convertedY - (value - 50) * scale_info + 10),
-                        cameraZoom * (newPosition.convertedX - Math.sqrt(3) * (value - 50) * scale_info), cameraZoom * newPosition.convertedY);
+                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY - temp_value * scale_info));
+                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX - Math.sqrt(3) * temp_value * scale_info + 10), cameraZoom * (newPosition.convertedY - temp_value * scale_info + 10),
+                        cameraZoom * (newPosition.convertedX - Math.sqrt(3) * temp_value * scale_info), cameraZoom * newPosition.convertedY);
                     ctx.stroke();
 
                     ctx.beginPath();
-                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + (value - 50) * scale_info));
-                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX - Math.sqrt(3) * (value - 50) * scale_info + 10), cameraZoom * (newPosition.convertedY + (value - 50) * scale_info - 10),
-                        cameraZoom * (newPosition.convertedX - Math.sqrt(3) * (value - 50) * scale_info), cameraZoom * newPosition.convertedY);
+                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + temp_value * scale_info));
+                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX - Math.sqrt(3) * temp_value * scale_info + 10), cameraZoom * (newPosition.convertedY + temp_value * scale_info - 10),
+                        cameraZoom * (newPosition.convertedX - Math.sqrt(3) * temp_value * scale_info), cameraZoom * newPosition.convertedY);
                     ctx.stroke();
 
                     ctx.beginPath();
-                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + (value - 50) * scale_info));
-                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX + Math.sqrt(3) * (value - 50) * scale_info - 10), cameraZoom * (newPosition.convertedY + (value - 50) * scale_info - 10),
-                        cameraZoom * (newPosition.convertedX + Math.sqrt(3) * (value - 50) * scale_info), cameraZoom * newPosition.convertedY);
+                    ctx.moveTo(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + temp_value * scale_info));
+                    ctx.quadraticCurveTo(cameraZoom * (newPosition.convertedX + Math.sqrt(3) * temp_value * scale_info - 10), cameraZoom * (newPosition.convertedY + temp_value * scale_info - 10),
+                        cameraZoom * (newPosition.convertedX + Math.sqrt(3) * temp_value * scale_info), cameraZoom * newPosition.convertedY);
                     ctx.stroke();
-
-                    ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
-                        cameraZoom * (newPosition.convertedX - globalData.buildingSize / 2), cameraZoom * (newPosition.convertedY - globalData.buildingSize * 2 / 3),
-                        cameraZoom * globalData.buildingSize, cameraZoom * globalData.buildingSize
-                    );
                 } else {
+                    ctx.beginPath();
+                    ctx.fillStyle = "grey"
+                    ctx.lineWidth = 1;
+                    ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                    ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                    ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                    ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                    ctx.fill();
+
                     var temp = value;
                     var t = 2;
                     while (temp != 1) {
                         if (temp % t == 0) {
-                            drawCurveRoad(newPosition, t)
+                            drawCurveRoad({
+                                'x': drawPointsArr[i].x,
+                                'y': drawPointsArr[i].y
+                            }, t)
                             temp /= t;
                             t = 1;
                         }
@@ -873,120 +900,166 @@ function draw() {
                 ctx.beginPath();
                 ctx.fillStyle = "grey"
                 ctx.lineWidth = 1;
-                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY - temp_width);
-                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY);
-                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + temp_width);
-                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
                 ctx.fill();
             }
         }
     }
 
-    function drawCurveRoad(point, value) {
-        ctx.beginPath();
-        ctx.lineWidth = 1.8 * temp_width;
-        ctx.strokeStyle = "grey"
-        var temp_value = 1
-        switch (value) {
-            case 2:
-                ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth));
-                ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY), cameraZoom * (point.convertedX), cameraZoom * (point.convertedY),
-                    cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth));
-                break;
-            case 3:
-                ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth));
-                ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY), cameraZoom * (point.convertedX), cameraZoom * (point.convertedY),
-                    cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth));
-                break;
-            case 5:
-                ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth));
-                ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY), cameraZoom * (point.convertedX), cameraZoom * (point.convertedY),
-                    cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth));
-                break;
-            case 7:
-                ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth));
-                ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY), cameraZoom * (point.convertedX), cameraZoom * (point.convertedY),
-                    cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth));
-                break;
+
+    ctx.fillStyle = "white"
+    ctx.lineWidth = 1;
+    //if(count == 0) {
+        for (var i = 0; i < movingPoints.length; i++) {
+            var newPosition = convertPosition(scale_info * (movingPoints[i].posX) - globalData.wide, scale_info * (movingPoints[i].posY) - globalData.wide)
+    
+            if (totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 0 && totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != -1) {
+                ctx.beginPath();
+                ctx.arc(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + 2 * globalData.roadWidth), cameraZoom * 6, 0, 2 * Math.PI)
+                ctx.fill()
+            }
+            if(count == 0) {
+                movingPoints[i].moving();
+            if(movingPoints[i].posX != 0 && movingPoints[i].posX != 999 &&
+                movingPoints[i].posY != 0 && movingPoints[i].posY != 999) {
+                    if (totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != -1 &&
+                        totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 2 && 
+                            totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 3 && 
+                            totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 5 && 
+                                totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 7 && 
+                            totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 10 && 
+                                totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != 21 && 
+                                    totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] < 1000) {
+                                        
+                        if (movingPoints[i].speedX == 0) {
+                            var t = (Math.random() > 0.5 ? 1 : -1)
+                            if (totalPointInfo[movingPoints[i].posX + t][movingPoints[i].posY] != 0) {
+                                movingPoints[i].changeDirection(t, 0)
+                            } else if (totalPointInfo[movingPoints[i].posX - t][movingPoints[i].posY] != 0) {
+                                movingPoints[i].changeDirection(-t, 0)
+                            } else {
+                                movingPoints[i].changeDirection(-movingPoints[i].speedX, -movingPoints[i].speedY)
+                            }
+                        } else {
+                            var t = (Math.random() > 0.5 ? 1 : -1)
+                            if (totalPointInfo[movingPoints[i].posX][movingPoints[i].posY + t] != 0) {
+                                movingPoints[i].changeDirection(0, t)
+                            } else if (totalPointInfo[movingPoints[i].posX][movingPoints[i].posY - t] != 0) {
+                                movingPoints[i].changeDirection(0, -t)
+                            } else {
+                                movingPoints[i].changeDirection(-movingPoints[i].speedX, -movingPoints[i].speedY)
+                            }
+                        }
+                    }
+                }
+            
         }
-        ctx.stroke();
+            }
+            
+    //}
+    
+
+
+
+    buildingPosArr = []
+    var minDistance_building = 2 * Math.pow(globalData.buildingSize, 2)
+
+    for (var i = 0; i < drawPointsArr.length; i++) {
+        var value = totalPointInfo[(drawPointsArr[i].x - globalData.roadWidth / 2) / scale_info][(drawPointsArr[i].y - globalData.roadWidth / 2) / scale_info]
+        if (value != -1) {
+            if (value != 1 && value != 10 && value != 21 && value < 1000) {
+                var newPosition = convertPosition(drawPointsArr[i].x - globalData.wide, drawPointsArr[i].y - globalData.wide)
+                if (checkingDelBuildings({
+                    'x': newPosition.convertedX,
+                    'y': newPosition.convertedY
+                })) {
+                    ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
+                        cameraZoom * (newPosition.convertedX - globalData.buildingSize / 2 + 5), cameraZoom * (newPosition.convertedY - globalData.buildingSize * 2 / 3) + temp_width,
+                        cameraZoom * globalData.buildingSize, cameraZoom * globalData.buildingSize
+                    );
+                    buildingPosArr.push({
+                        'x': newPosition.convertedX,
+                        'y': newPosition.convertedY
+                    })
+                }
+            } else if (value >= 1000) {
+                var newPosition = convertPosition(drawPointsArr[i].x - globalData.wide, drawPointsArr[i].y - globalData.wide)
+                var size = globalData.buildingSize * (value - 1000) / 10
+                ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
+                    cameraZoom * (newPosition.convertedX - size / 2), cameraZoom * (newPosition.convertedY - size * 2 / 3) + temp_width,
+                    cameraZoom * size, cameraZoom * size
+                );
+            }
+        }
     }
 
-    // function getAroundPointsCnt(point) {
-    //     var temp_x = Number((point.x - globalData.roadWidth / 2) / scale_info);
-    //     var temp_y = Number((point.y - globalData.roadWidth / 2) / scale_info);
-    //     // console.log(temp_x, temp_y)
-    //     if(temp_x > 0 && temp_x < 999 
-    //         && temp_y > 0 && temp_y < 999) {
-    //             return (totalPointInfo[temp_x][temp_y] + 
-    //                 totalPointInfo[temp_x - 1][temp_y] + totalPointInfo[temp_x + 1][temp_y] + 
-    //                 totalPointInfo[temp_x][temp_y - 1] + totalPointInfo[temp_x][temp_y + 1])
-    //         }
-    //     return 0;
-    // }
 
+    function checkingDelBuildings(position) {
+        for (var i = 0; i < buildingPosArr.length; i++) {
+            if (Math.pow((buildingPosArr[i].x - position.x), 2) + Math.pow((buildingPosArr[i].y - position.y), 2) < minDistance_building) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-
-    // ctx.strokeStyle = "grey";
-    // ctx.lineWidth = cameraZoom * globalData.roadWidth;
-    // ctx.beginPath();
-    // for (var i = borderNum; i < totalLineInfo.length; i++) {  
-    //     var fromPos = convertPosition(totalLineInfo[i].from.x, totalLineInfo[i].from.y)
-    //     var toPos = convertPosition(totalLineInfo[i].to.x, totalLineInfo[i].to.y)
-
-    //     if (totalLineInfo[i].mid == undefined) {
-    //         ctx.moveTo(cameraZoom * fromPos.convertedX, cameraZoom * fromPos.convertedY)
-    //         ctx.lineTo(cameraZoom * toPos.convertedX, cameraZoom * toPos.convertedY)
-    //     } else {
-    //         var midPos = convertPosition(totalLineInfo[i].mid.x, totalLineInfo[i].mid.y)
-
-    //         var tempCenter_del = {
-    //             'delX': ((totalLineInfo[i].from.x > totalLineInfo[i].to.x) ? -Math.sqrt(3) : Math.sqrt(3)) * 2 * globalData.buildingSize,
-    //             'delY': ((totalLineInfo[i].from.y > totalLineInfo[i].to.y) ? 1 : -1) * 2 * globalData.buildingSize,
-    //         }
-
-    //         var tempStart = convertPosition(totalLineInfo[i].mid.x, totalLineInfo[i].mid.y + tempCenter_del.delY)
-    //         var tempEnd = convertPosition(totalLineInfo[i].mid.x + tempCenter_del.delX, totalLineInfo[i].mid.y)
-
-    //         ctx.moveTo(cameraZoom * fromPos.convertedX, cameraZoom * fromPos.convertedY)
-    //         ctx.lineTo(cameraZoom * tempStart.convertedX, cameraZoom * tempStart.convertedY)
-
-    //         ctx.moveTo(cameraZoom * toPos.convertedX, cameraZoom * toPos.convertedY)
-    //         ctx.lineTo(cameraZoom * tempEnd.convertedX, cameraZoom * tempEnd.convertedY)
-
-    //         ctx.moveTo(cameraZoom * tempStart.convertedX, cameraZoom * tempStart.convertedY)
-    //         ctx.bezierCurveTo(cameraZoom * midPos.convertedX, cameraZoom * midPos.convertedY,
-    //             cameraZoom * midPos.convertedX, cameraZoom * midPos.convertedY,
-    //             cameraZoom * tempEnd.convertedX, cameraZoom * tempEnd.convertedY);
-    //     }
-    // }
-    // ctx.lineCap = 'round';
-    // ctx.stroke();
-
-
-
-    // ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-    // ctx.lineWidth = 1;
-
-    // for(var i = 0; i < movingPoint.length; i++) {
-    //     ctx.beginPath();
-    //     ctx.arc(cameraZoom * movingPoint[i].position.x, cameraZoom * movingPoint[i].position.y, cameraZoom * 5, 0, Math.PI * 2); 
-    //     ctx.fill();
-    // }
-
-
-    // for (var i = 0; i < buildingPosArr.length; i++) {
-    //     var newPosition = convertPosition(buildingPosArr[i].x, buildingPosArr[i].y)
-    //     // ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
-    //     //     cameraZoom * (newPosition.convertedX - globalData.buildingSize / 2), cameraZoom * (newPosition.convertedY - globalData.buildingSize * 2 / 3),
-    //     //     cameraZoom * globalData.buildingSize, cameraZoom * globalData.buildingSize
-    //     // );
-    //     ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
-    //         cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY,
-    //         cameraZoom * globalData.buildingSize, cameraZoom * globalData.buildingSize
-    //     );
-    // }
-
+    function drawCurveRoad(point, value) {
+        // ctx.beginPath();
+        // ctx.lineWidth = 1.75 * temp_width;
+        // ctx.strokeStyle = "grey"
+        // var temp_value = 6
+        ctx.beginPath();
+        ctx.fillStyle = "grey"
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "grey";
+        switch (value) {
+            case 2:
+                var newPosition = convertPosition(point.x - globalData.wide - 10, point.y - globalData.wide)
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                // ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
+                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
+                //     cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
+                break;
+            case 3:
+                var newPosition = convertPosition(point.x - globalData.wide, point.y - globalData.wide - 10)
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                // ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
+                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
+                //     cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
+                break;
+            case 5:
+                var newPosition = convertPosition(point.x + 10 - globalData.wide, point.y - globalData.wide)
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                // ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
+                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
+                //     cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
+                break;
+            case 7:
+                var newPosition = convertPosition(point.x - globalData.wide, point.y - globalData.wide + 10)
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY);
+                ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
+                ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
+                // ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
+                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
+                //     cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
+                break;
+        }
+        ctx.fill();
+        // ctx.stroke();
+    }
 
     cameraOffset_pre.x = -window.innerWidth / 2 + cameraOffset.x
     cameraOffset_pre.y = -window.innerHeight / 2 + cameraOffset.y
