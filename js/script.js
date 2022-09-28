@@ -11,7 +11,7 @@ let cameraOffset = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 let cameraOffset_pre = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 let cameraZoom = 0.5
 let MAX_ZOOM = 5
-let MIN_ZOOM = 0.03
+let MIN_ZOOM = 0.1
 let SCROLL_SENSITIVITY = 0.0001
 
 const canvas = document.getElementById("myCanvas");
