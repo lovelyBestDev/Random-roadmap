@@ -1,7 +1,5 @@
 const globalData = {
     'buildingSize': 155,
-    'buildingScale': 1,
-    'buildingKind': 6,
     'roadWidth': 20,
     'totalBuildingCnt': 3000,
     'initialBuildingCnt': 4,
@@ -11,7 +9,7 @@ const globalData = {
 
 let cameraOffset = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 let cameraOffset_pre = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-let cameraZoom = 1
+let cameraZoom = 0.5
 let MAX_ZOOM = 5
 let MIN_ZOOM = 0.03
 let SCROLL_SENSITIVITY = 0.0001
@@ -381,7 +379,7 @@ function getTotalPointInfo() {
 
 
 
-    var ttt = 70;
+    var ttt = 45;
     for (var i = ttt; i < pointInfo.length - ttt; i++) {
         for (var j = ttt; j < pointInfo[i].length - ttt; j++) {
             var temp = {
@@ -396,11 +394,11 @@ function getTotalPointInfo() {
                     var Y = j + Math.floor(ttt / 2)
                     pointInfo[X][Y] = r + 1000
 
-                    var temp_del = 5;
+                    var temp_del = 4;
                     var rand_1 = Math.floor(Math.random() * 4)
 
                     {
-                        if (rand_1 != 0) {
+                        if (rand_1 != 0 && rand_1 != 1) {
                             var temp = r - temp_del;
                             while (true) {
                                 if (X + temp >= len) {
@@ -771,7 +769,7 @@ function convertPosition(x, y) {
 }
 
 function draw() {
-    count = (count + 1) % 4
+    count = (count + 1) % 3
     ctx.translate(-cameraZoom * cameraOffset_pre.x, -cameraZoom * cameraOffset_pre.y)
     ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y))
 
@@ -921,8 +919,7 @@ function draw() {
                 ctx.arc(cameraZoom * newPosition.convertedX, cameraZoom * (newPosition.convertedY + 2 * globalData.roadWidth), cameraZoom * 6, 0, 2 * Math.PI)
                 ctx.fill()
             }
-            if(count == 0) {
-                movingPoints[i].moving();
+            movingPoints[i].moving();
             if(movingPoints[i].posX != 0 && movingPoints[i].posX != 999 &&
                 movingPoints[i].posY != 0 && movingPoints[i].posY != 999) {
                     if (totalPointInfo[movingPoints[i].posX][movingPoints[i].posY] != -1 &&
@@ -956,9 +953,7 @@ function draw() {
                     }
                 }
             
-        }
-            }
-            
+        }  
     //}
     
 
@@ -987,7 +982,7 @@ function draw() {
                 }
             } else if (value >= 1000) {
                 var newPosition = convertPosition(drawPointsArr[i].x - globalData.wide, drawPointsArr[i].y - globalData.wide)
-                var size = globalData.buildingSize * (value - 1000) / 10
+                var size = globalData.buildingSize;  //globalData.buildingSize * 1 + (value - 1000) / 10
                 ctx.drawImage(document.getElementById('source_' + (i % 4 + 1)),
                     cameraZoom * (newPosition.convertedX - size / 2), cameraZoom * (newPosition.convertedY - size * 2 / 3) + temp_width,
                     cameraZoom * size, cameraZoom * size
