@@ -9,7 +9,7 @@ const globalData = {
 
 let cameraOffset = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
 let cameraOffset_pre = { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-let cameraZoom = 0.5
+let cameraZoom = 1
 let MAX_ZOOM = 5
 let MIN_ZOOM = 0.1
 let SCROLL_SENSITIVITY = 0.0001
@@ -768,10 +768,48 @@ function convertPosition(x, y) {
     return newPosition;
 }
 
+var del_X = 0;//window.innerWidth / 2;
+var del_Y = 0;//window.innerHeight / 2;
+var pre_cameraZoom;
+
 function draw() {
-    count = (count + 1) % 3
+    // console.log("x:", cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * cameraOffset_pre.x)
+    // console.log("y:", cameraZoom * (-window.innerHeight / 2 + cameraOffset.y), cameraZoom * cameraOffset_pre.y)
+    // if(flag) {
+    //     var temp = cameraOffset_pre.x - (-window.innerWidth / 2 + cameraOffset.x);
+    //     temp *= cameraZoom;
+    //     del_X += temp
+    // }
+    // console.log(del_X * cameraZoom, Math.pow((cameraZoom / 0.1 * Math.sqrt(Math.sqrt(Math.sqrt(cameraZoom / 0.1)))), 2) * 555, cameraZoom)
+    // count = (count + 1) % 3
+
+    if(cameraOffset_pre.x != -window.innerWidth / 2 + cameraOffset.x || cameraOffset_pre.y != -window.innerHeight / 2 + cameraOffset.y) {
+        del_X += cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+        del_Y += cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+    }
+
+    if(del_X / cameraZoom < -56000 || del_X / cameraZoom > 70000) {
+        if(pre_cameraZoom != cameraZoom) {
+            cameraZoom = pre_cameraZoom
+        }
+        del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+        cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+    }
+    if(del_Y / cameraZoom > 40500 || del_Y / cameraZoom < -30500) {
+        if(pre_cameraZoom != cameraZoom) {
+            cameraZoom = pre_cameraZoom
+        }
+        del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+        cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
+    }
+
     ctx.translate(-cameraZoom * cameraOffset_pre.x, -cameraZoom * cameraOffset_pre.y)
-    ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y))
+    ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y));
+
+    cameraOffset_pre.x = -window.innerWidth / 2 + cameraOffset.x
+    cameraOffset_pre.y = -window.innerHeight / 2 + cameraOffset.y
+
+    pre_cameraZoom = cameraZoom
 
     ctx.clearRect(-10 * cameraZoom * globalData.wide, -10 * cameraZoom * globalData.wide, 20 * cameraZoom * globalData.wide, 20 * cameraZoom * globalData.wide)
 
@@ -1055,9 +1093,6 @@ function draw() {
         ctx.fill();
         // ctx.stroke();
     }
-
-    cameraOffset_pre.x = -window.innerWidth / 2 + cameraOffset.x
-    cameraOffset_pre.y = -window.innerHeight / 2 + cameraOffset.y
 }
 
 
@@ -1086,13 +1121,13 @@ function onPointerUp(e) {
     isDragging = false
     initialPinchDistance = null
     lastZoom = cameraZoom
-
 }
 
 function onPointerMove(e) {
     if (isDragging) {
-        cameraOffset.x = getEventLocation(e).x / cameraZoom - dragStart.x, (globalData.wide * cameraZoom) / 2
-        cameraOffset.y = getEventLocation(e).y / cameraZoom - dragStart.y, (globalData.wide * cameraZoom) / 2
+        flag = true;
+        cameraOffset.x = getEventLocation(e).x / cameraZoom - dragStart.x
+        cameraOffset.y = getEventLocation(e).y / cameraZoom - dragStart.y
     }
 }
 
