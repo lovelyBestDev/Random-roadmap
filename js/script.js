@@ -107,78 +107,6 @@ function init() {
 }
 
 
-// function getBuildingPositionInfo() {
-//     var minDistance_building = 2 * Math.pow(globalData.buildingSize, 2)
-//     var minDistance_road = 2 * Math.pow((2 * Math.sqrt(3) * globalData.roadWidth), 2)
-
-//     var wide = globalData.wide - globalData.buildingSize
-//     for (var i = 0; i < globalData.totalBuildingCnt; i++) {
-//         var temp;
-//         var cnt = 0
-//         while (true) {
-//             temp = {
-//                 'x': Math.random() * 2 * wide - wide,
-//                 'y': Math.random() * 2 * wide - wide,
-//             }
-//             if (checkingDelBuildings(temp) && checkingAcrossBuildingAndLine(temp)) {
-//                 break;
-//             }
-//             cnt++;
-//             if (cnt == 1000) {
-//                 break;
-//             }
-//         }
-//         if (cnt < 1000) {
-//             buildingPosArr.push({ ...temp })
-//         }
-
-//     }
-
-//     function checkingDelBuildings(position) {
-//         for (var i = 0; i < buildingPosArr.length; i++) {
-//             if (Math.pow((buildingPosArr[i].x - position.x), 2) + Math.pow((buildingPosArr[i].y - position.y), 2) < minDistance_building) {
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }
-
-//     function checkingAcrossBuildingAndLine(position) {
-//         for (var i = 0; i < globalData.buildingSize; i++) {
-//             for (var k = 0; k < drawPointsArr.length; k++) {
-//                 var temp = {
-//                     'x': position.x + i,
-//                     'y': position.y
-//                 }
-//                 var temp_1 = {
-//                     'x': position.x + i,
-//                     'y': position.y + (globalData.buildingSize - 1)
-//                 }
-//                 var temp_2 = {
-//                     'x': position.x,
-//                     'y': position.y + i
-//                 }
-//                 var temp_3 = {
-//                     'x': position.x + (globalData.buildingSize - 1),
-//                     'y': position.y + i
-//                 }
-//                 if (distanceBetTwoPoints(drawPointsArr[k], temp) < minDistance_road
-//                     || distanceBetTwoPoints(drawPointsArr[k], temp_1) < minDistance_road
-//                     || distanceBetTwoPoints(drawPointsArr[k], temp_2) < minDistance_road
-//                     || distanceBetTwoPoints(drawPointsArr[k], temp_3) < minDistance_road) {
-//                     return false
-//                 }
-//             }
-//         }
-//         return true;
-//     }
-
-//     function distanceBetTwoPoints(point1, point2) {
-//         return Math.pow((point1.x - point2.x), 2) + Math.pow((point1.y - point2.y), 2)
-//     }
-// }
-
-
 function getTotalPointInfo() {
     var len = 1000
 
@@ -629,135 +557,6 @@ function getTotalPointInfo() {
     }
 }
 
-// function getTotalLineInfo_2() {
-//     var len = 1000
-
-//     var pointInfo = new Array(len)
-//     for (var i = 0; i < len; i++) {
-//         pointInfo[i] = new Array(len)
-//         for (var j = 0; j < len; j++) {
-//             pointInfo[i][j] = 0
-//             if(i * j == 0 || i == len - 1 || j == len - 1) {
-//                 pointInfo[i][j] = 1
-//             }
-//         }
-//     }
-
-//     var onceMovingLength = 40;
-//     var cnt = len / onceMovingLength;
-
-//     var xyRandom = Math.random()
-//     var startPoint = {
-//         // 'x': (xyRandom > 0.5) ? (onceMovingLength * Math.floor(Math.random() * (cnt - 1) + 1) - 1) : 0,
-//         // 'y': (xyRandom > 0.5) ? 0 : (onceMovingLength * Math.floor(Math.random() * (cnt - 1) + 1) - 1),
-//         'x': 399,
-//         'y': 599,
-//     };
-//     var startDir = {
-//         // 'x': (startPoint.x == 0) ? 1 : 0, 
-//         // 'y': (startPoint.y == 0) ? 1 : 0
-//         'x': 1, 
-//         'y': 0
-//     };
-
-//     main(startPoint, startDir)
-
-//     function main(point, dir) {
-//         // var move = Math.floor((Math.random() * onceMovingLength / 2) + onceMovingLength / 2)
-//         // if(!drawParallelRoad(point, dir, move)) {
-//         //     return;
-//         // }
-//         if(!drawParallelRoad(point, dir, onceMovingLength)) {
-//             return;
-//         }
-//         point.x += onceMovingLength * dir.x;
-//         point.y += onceMovingLength * dir.y;
-
-//         var newDir = {
-//             'x': (dir.x != 0) ? 0 : ((Math.random() - 0.5 > 0) ? 1 : -1),
-//             'y': (dir.y != 0) ? 0 : ((Math.random() - 0.5 > 0) ? 1 : -1)
-//         }
-
-//         if(Math.random() * 25 < 2) {
-//             main(point, newDir)
-//             main(point, dir)
-//         // } else if(Math.random() * 3 < 1) {
-//         //     main(point, newDir)
-//         } else if(Math.random() * 15 < 2){
-//             main(point, newDir)
-//         } else {
-//             main(point, dir)
-//         }
-//     }
-
-//     function drawParallelRoad(point, dir, move) {
-//         var temp_point = {...point}
-//         for(var i = 0; i < move; i++) {
-//             pointInfo[temp_point.x][temp_point.y] = 1
-//             temp_point.x += dir.x
-//             temp_point.y += dir.y
-//             if(temp_point.x * temp_point.y == 0 || temp_point.x == len - 1 || temp_point.y == len - 1) {
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }
-
-//     function checkingEndPoint(point) {
-//         if(point.x * point.y == 0 || point.x == len - 1 || point.y == len - 1) {
-//             return true;
-//         }
-//         return false;
-//     }
-
-//     draw();
-
-//     function draw() {
-//         ctx.fillStyle = '#777777'
-//         for (var i = 0; i < len; i++) {
-//             for (var j = 0; j < len; j++) {
-//                 if(pointInfo[i][j] == 1) {
-//                     ctx.beginPath();
-//                     ctx.arc(i, j, 0.5, 0 * Math.PI, 2 * Math.PI);
-//                     ctx.fill();
-//                 }
-//                 if(i > 1 && j > 1 && i < len - 2 && j < len - 2) {
-//                     if(pointInfo[i][j] +
-//                         pointInfo[i + 1][j] +
-//                         pointInfo[i - 1][j] +
-//                         pointInfo[i][j + 1] +
-//                         pointInfo[i][j - 1] >= 4 ) {
-//                             ctx.beginPath();
-//                             ctx.arc(i, j, 5, 0 * Math.PI, 2 * Math.PI);
-//                             ctx.fill();
-//                         }
-//                 }
-//             }
-//         }
-//     }
-
-// }
-
-
-// function getCurveLine(start, end) {
-//     if (Math.abs(buildingPosArr[start].x - buildingPosArr[end].x) > globalData.buildingSize
-//         && Math.abs(buildingPosArr[start].y - buildingPosArr[end].y) > globalData.buildingSize) {
-//         totalLineInfo.push({
-//             'from': {
-//                 'x': buildingPosArr[start].x,
-//                 'y': buildingPosArr[start].y
-//             },
-//             'mid': {
-//                 'x': buildingPosArr[start].x,
-//                 'y': buildingPosArr[end].y
-//             },
-//             'to': {
-//                 'x': buildingPosArr[end].x,
-//                 'y': buildingPosArr[end].y,
-//             }
-//         })
-//     }
-// }
 
 function convertPosition(x, y) {
     var newPosition = {
@@ -773,15 +572,6 @@ var del_Y = 0;//window.innerHeight / 2;
 var pre_cameraZoom;
 
 function draw() {
-    // console.log("x:", cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * cameraOffset_pre.x)
-    // console.log("y:", cameraZoom * (-window.innerHeight / 2 + cameraOffset.y), cameraZoom * cameraOffset_pre.y)
-    // if(flag) {
-    //     var temp = cameraOffset_pre.x - (-window.innerWidth / 2 + cameraOffset.x);
-    //     temp *= cameraZoom;
-    //     del_X += temp
-    // }
-    // console.log(del_X * cameraZoom, Math.pow((cameraZoom / 0.1 * Math.sqrt(Math.sqrt(Math.sqrt(cameraZoom / 0.1)))), 2) * 555, cameraZoom)
-    // count = (count + 1) % 3
 
     if(cameraOffset_pre.x != -window.innerWidth / 2 + cameraOffset.x || cameraOffset_pre.y != -window.innerHeight / 2 + cameraOffset.y) {
         del_X += cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
@@ -1040,10 +830,6 @@ function draw() {
     }
 
     function drawCurveRoad(point, value) {
-        // ctx.beginPath();
-        // ctx.lineWidth = 1.75 * temp_width;
-        // ctx.strokeStyle = "grey"
-        // var temp_value = 6
         ctx.beginPath();
         ctx.fillStyle = "grey"
         ctx.lineWidth = 1;
@@ -1055,9 +841,6 @@ function draw() {
                 ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
-                // ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
-                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
-                //     cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
                 break;
             case 3:
                 var newPosition = convertPosition(point.x - globalData.wide, point.y - globalData.wide - 10)
@@ -1065,9 +848,6 @@ function draw() {
                 ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
-                // ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
-                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
-                //     cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
                 break;
             case 5:
                 var newPosition = convertPosition(point.x + 10 - globalData.wide, point.y - globalData.wide)
@@ -1075,9 +855,6 @@ function draw() {
                 ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
-                // ctx.moveTo(cameraZoom * (point.convertedX + temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
-                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
-                //     cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
                 break;
             case 7:
                 var newPosition = convertPosition(point.x - globalData.wide, point.y - globalData.wide + 10)
@@ -1085,13 +862,9 @@ function draw() {
                 ctx.lineTo(cameraZoom * newPosition.convertedX + temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX, cameraZoom * newPosition.convertedY + 2 * temp_width);
                 ctx.lineTo(cameraZoom * newPosition.convertedX - temp_width * Math.sqrt(3), cameraZoom * newPosition.convertedY + temp_width);
-                // ctx.moveTo(cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY + temp_value * globalData.roadWidth) + temp_width);
-                // ctx.bezierCurveTo(cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width, cameraZoom * (point.convertedX), cameraZoom * (point.convertedY) + temp_width,
-                //     cameraZoom * (point.convertedX - temp_value * globalData.roadWidth * Math.sqrt(3)), cameraZoom * (point.convertedY - temp_value * globalData.roadWidth) + temp_width);
                 break;
         }
         ctx.fill();
-        // ctx.stroke();
     }
 }
 
