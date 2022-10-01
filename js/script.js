@@ -578,20 +578,70 @@ function draw() {
         del_Y += cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
     }
 
-    if(del_X / cameraZoom < -56000 || del_X / cameraZoom > 70000) {
-        if(pre_cameraZoom != cameraZoom) {
-            cameraZoom = pre_cameraZoom
+    console.log(del_X / cameraZoom, del_Y / cameraZoom)
+
+    if(del_X / cameraZoom > 0 && del_Y / cameraZoom > 0) {
+        if((del_Y / cameraZoom + 484.5) * 1.69 + del_X / cameraZoom > 67000) {
+            if(pre_cameraZoom != cameraZoom) {
+                cameraZoom = pre_cameraZoom
+            }
+            del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+            del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+            cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+            cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
         }
-        del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
-        cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
     }
-    if(del_Y / cameraZoom > 40500 || del_Y / cameraZoom < -30500) {
-        if(pre_cameraZoom != cameraZoom) {
-            cameraZoom = pre_cameraZoom
+
+    if(del_X / cameraZoom < 0 && del_Y / cameraZoom > 0) {
+        if((del_Y / cameraZoom + 484.5) * 1.3 - del_X / cameraZoom > 43000) {
+            if(pre_cameraZoom != cameraZoom) {
+                cameraZoom = pre_cameraZoom
+            }
+            del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+            del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+            cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+            cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
         }
-        del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
-        cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
     }
+
+    if(del_X / cameraZoom > 0 && del_Y / cameraZoom < 0) {
+        if(-(del_Y / cameraZoom + 484.5) * 2.34 + del_X / cameraZoom > 67000) {
+            if(pre_cameraZoom != cameraZoom) {
+                cameraZoom = pre_cameraZoom
+            }
+            del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+            del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+            cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+            cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
+        }
+    }
+
+    if(del_X / cameraZoom < 0 && del_Y / cameraZoom < 0) {
+        if(-(del_Y / cameraZoom + 484.5) * 1.76 - del_X / cameraZoom > 35000) {
+            if(pre_cameraZoom != cameraZoom) {
+                cameraZoom = pre_cameraZoom
+            }
+            del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+            del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+            cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+            cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
+        }
+    }
+
+    // if(del_X / cameraZoom < -56000 || del_X / cameraZoom > 70000) {
+    //     if(pre_cameraZoom != cameraZoom) {
+    //         cameraZoom = pre_cameraZoom
+    //     }
+    //     del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
+    //     cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
+    // }
+    // if(del_Y / cameraZoom > 40500 || del_Y / cameraZoom < -30500) {
+    //     if(pre_cameraZoom != cameraZoom) {
+    //         cameraZoom = pre_cameraZoom
+    //     }
+    //     del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
+    //     cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
+    // }
 
     ctx.translate(-cameraZoom * cameraOffset_pre.x, -cameraZoom * cameraOffset_pre.y)
     ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y));
