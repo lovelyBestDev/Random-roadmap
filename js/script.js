@@ -48,7 +48,7 @@ window.addEventListener("load", function () {
 
     this.setInterval(() => {
         draw()
-    }, 30)
+    }, 20)
 })
 
 
