@@ -578,7 +578,6 @@ function draw() {
         del_Y += cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
     }
 
-    console.log(del_X / cameraZoom, del_Y / cameraZoom)
 
     if(del_X / cameraZoom > 0 && del_Y / cameraZoom > 0) {
         if((del_Y / cameraZoom + 484.5) * 1.69 + del_X / cameraZoom > 67000) {
@@ -617,7 +616,7 @@ function draw() {
     }
 
     if(del_X / cameraZoom < 0 && del_Y / cameraZoom < 0) {
-        if(-(del_Y / cameraZoom + 484.5) * 1.76 - del_X / cameraZoom > 35000) {
+        if(-(del_Y / cameraZoom + 484.5) * 1.76 - del_X / cameraZoom > 32000) {
             if(pre_cameraZoom != cameraZoom) {
                 cameraZoom = pre_cameraZoom
             }
