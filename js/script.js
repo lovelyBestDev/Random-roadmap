@@ -1,5 +1,5 @@
 const globalData = {
-    'buildingSize': 155,
+    'buildingSize': 145,
     'roadWidth': 20,
     'totalBuildingCnt': 3000,
     'initialBuildingCnt': 4,
@@ -323,82 +323,99 @@ function getTotalPointInfo() {
                     pointInfo[X][Y] = r + 1000
 
                     var temp_del = 4;
+                    var temp_increase;
                     var rand_1 = Math.floor(Math.random() * 4)
 
                     {
                         if (rand_1 != 0 && rand_1 != 1) {
-                            var temp = r - temp_del;
+                            temp_increase = 1;
                             while (true) {
-                                if (X + temp >= len) {
+                                if (X + temp_increase >= len) {
                                     break
                                 }
-                                if (pointInfo[X + temp][Y] == 0) {
-                                    pointInfo[X + temp][Y] = 1
+                                if (pointInfo[X + temp_increase][Y] == 0) {
+                                    if(temp_increase == r - 4) {
+                                        pointInfo[X + temp_increase][Y] = 2
+                                    } else {
+                                        pointInfo[X + temp_increase][Y] = 1
+                                    }
                                 } else {
                                     breakingPoints.push({
-                                        'x': X + temp,
+                                        'x': X + temp_increase,
                                         'y': Y
                                     })
                                     break;
                                 }
-                                temp++;
+                                temp_increase++;
                             }
                         }
 
                         if (rand_1 != 1) {
-                            temp = r - temp_del;
+                            temp_increase = 1;
                             while (true) {
-                                if (Y + temp >= len) {
+                                if (Y + temp_increase >= len) {
                                     break
                                 }
-                                if (pointInfo[X][Y + temp] == 0) {
-                                    pointInfo[X][Y + temp] = 1
+                                if (pointInfo[X][Y + temp_increase] == 0) {
+                                    if(temp_increase == r - 4) {
+                                        pointInfo[X][Y + temp_increase] = 2
+                                    } else {
+                                        pointInfo[X][Y + temp_increase] = 1
+                                    }
                                 } else {
                                     breakingPoints.push({
                                         'x': X,
-                                        'y': Y + temp
+                                        'y': Y + temp_increase
                                     })
                                     break;
                                 }
-                                temp++;
+                                temp_increase++;
                             }
                         }
 
                         if (rand_1 != 2) {
-                            temp = -r + temp_del;
+                            temp_increase = -1;
                             while (true) {
-                                if (X + temp < 0) {
+                                if (X + temp_increase < 0) {
                                     break
                                 }
-                                if (pointInfo[X + temp][Y] == 0) {
-                                    pointInfo[X + temp][Y] = 1
+                                if (pointInfo[X + temp_increase][Y] == 0) {
+                                    if(temp_increase == -r + 4) {
+                                        pointInfo[X + temp_increase][Y] = 2
+                                    } else {
+                                        pointInfo[X + temp_increase][Y] = 1
+                                    }
                                 } else {
                                     breakingPoints.push({
-                                        'x': X + temp,
+                                        'x': X + temp_increase,
                                         'y': Y
                                     })
                                     break;
                                 }
-                                temp--;
+                                temp_increase--;
                             }
                         }
 
                         if (rand_1 != 3) {
-                            temp = -r + temp_del;
+                            temp_increase = -1;
                             while (true) {
-                                if (Y + temp < 0) {
+                                if (Y + temp_increase < 0) {
                                     break
                                 }
-                                if (pointInfo[X][Y + temp] == 0) {
-                                    pointInfo[X][Y + temp] = 1
+                                if (pointInfo[X][Y + temp_increase] == 0) {
+                                    if(temp_increase == -r + 4) {
+                                        pointInfo[X][Y + temp_increase] = 2
+                                    } else {
+                                        pointInfo[X][Y + temp_increase] = 1
+                                    }
                                 } else {
                                     breakingPoints.push({
                                         'x': X,
-                                        'y': Y + temp
+                                        'y': Y + temp_increase
                                     })
                                     break;
                                 }
-                                temp--;
+                                temp_increase--;
                             }
                         }
 
@@ -426,9 +443,6 @@ function getTotalPointInfo() {
     for (var i = 0; i < breakingPoints.length; i++) {
         if (breakingPoints[i].x > 3 && breakingPoints[i].x < len - 4
             && breakingPoints[i].y > 3 && breakingPoints[i].y < len - 4) {
-            // pointInfo[breakingPoints[i].x][breakingPoints[i].y] = setBreakingPointValue(breakingPoints[i])
-            // pointInfo[breakingPoints[i].x][breakingPoints[i].y] = 2
-
             var dirArr = [
                 { 'x': 1, 'y': 0 },
                 { 'x': -1, 'y': 0 },
@@ -444,20 +458,6 @@ function getTotalPointInfo() {
             }
         }
     }
-
-    // for (var i = 0; i < breakingPoints.length; i++) {
-    //     for (var j = 1; j < 3; j++) {
-    //         if (breakingPoints[i].x >= j && breakingPoints[i].x < len - j
-    //             && breakingPoints[i].y >= j && breakingPoints[i].y < len - j) {
-    //             pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x - j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x - j][breakingPoints[i].y]
-    //             pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y - j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y - j]
-    //             pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] = pointInfo[breakingPoints[i].x + j][breakingPoints[i].y] == 1 ? 0 : pointInfo[breakingPoints[i].x + j][breakingPoints[i].y]
-    //             pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] = pointInfo[breakingPoints[i].x][breakingPoints[i].y + j] == 1 ? 0 : pointInfo[breakingPoints[i].x][breakingPoints[i].y + j]
-    //         }
-    //     }
-    // }
-
-
 
     return pointInfo;
 
@@ -486,21 +486,6 @@ function getTotalPointInfo() {
     }
 
     function setBreakingPointValue(point) {
-        // var temp_value = 1;
-        // if (pointInfo[point.x - 1][point.y] == 1 && pointInfo[point.x][point.y - 1] == 1) {
-        //     temp_value *= 2;
-        // }
-        // if (pointInfo[point.x][point.y - 1] == 1 && pointInfo[point.x + 1][point.y] == 1) {
-        //     temp_value *= 3;
-        // }
-        // if (pointInfo[point.x + 1][point.y] == 1 && pointInfo[point.x][point.y + 1] == 1) {
-        //     temp_value *= 5;
-        // }
-        // if (pointInfo[point.x][point.y + 1] == 1 && pointInfo[point.x - 1][point.y] == 1) {
-        //     temp_value *= 7;
-        // }
-        // return temp_value;
-
         var temp_value = 1;
         if (pointInfo[point.x - 1][point.y] != 0 && pointInfo[point.x - 1][point.y] != -1) {
             temp_value *= 2;
@@ -626,21 +611,6 @@ function draw() {
             cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
         }
     }
-
-    // if(del_X / cameraZoom < -56000 || del_X / cameraZoom > 70000) {
-    //     if(pre_cameraZoom != cameraZoom) {
-    //         cameraZoom = pre_cameraZoom
-    //     }
-    //     del_X -= cameraZoom * (-window.innerWidth / 2 + cameraOffset.x - cameraOffset_pre.x)
-    //     cameraOffset.x = cameraOffset_pre.x + window.innerWidth / 2
-    // }
-    // if(del_Y / cameraZoom > 40500 || del_Y / cameraZoom < -30500) {
-    //     if(pre_cameraZoom != cameraZoom) {
-    //         cameraZoom = pre_cameraZoom
-    //     }
-    //     del_Y -= cameraZoom * (-window.innerHeight / 2 + cameraOffset.y - cameraOffset_pre.y)
-    //     cameraOffset.y = cameraOffset_pre.y + window.innerHeight / 2
-    // }
 
     ctx.translate(-cameraZoom * cameraOffset_pre.x, -cameraZoom * cameraOffset_pre.y)
     ctx.translate(cameraZoom * (-window.innerWidth / 2 + cameraOffset.x), cameraZoom * (-window.innerHeight / 2 + cameraOffset.y));
