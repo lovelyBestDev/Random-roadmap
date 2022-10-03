@@ -48,7 +48,7 @@ window.addEventListener("load", function () {
 
     this.setInterval(() => {
         draw()
-    }, 30)
+    }, 20)
 })
 
 
@@ -565,7 +565,7 @@ function draw() {
 
 
     if(del_X / cameraZoom > 0 && del_Y / cameraZoom > 0) {
-        if((del_Y / cameraZoom + 484.5) * 1.69 + del_X / cameraZoom > 67000) {
+        if((del_Y / cameraZoom + 484.5) * 1.69 + del_X / cameraZoom > 61000) {
             if(pre_cameraZoom != cameraZoom) {
                 cameraZoom = pre_cameraZoom
             }
@@ -577,7 +577,7 @@ function draw() {
     }
 
     if(del_X / cameraZoom < 0 && del_Y / cameraZoom > 0) {
-        if((del_Y / cameraZoom + 484.5) * 1.3 - del_X / cameraZoom > 43000) {
+        if((del_Y / cameraZoom + 484.5) * 1.3 - del_X / cameraZoom > 34000) {
             if(pre_cameraZoom != cameraZoom) {
                 cameraZoom = pre_cameraZoom
             }
@@ -589,7 +589,7 @@ function draw() {
     }
 
     if(del_X / cameraZoom > 0 && del_Y / cameraZoom < 0) {
-        if(-(del_Y / cameraZoom + 484.5) * 2.34 + del_X / cameraZoom > 67000) {
+        if(-(del_Y / cameraZoom + 484.5) * 1.8 + del_X / cameraZoom > 37000) {
             if(pre_cameraZoom != cameraZoom) {
                 cameraZoom = pre_cameraZoom
             }
@@ -601,7 +601,7 @@ function draw() {
     }
 
     if(del_X / cameraZoom < 0 && del_Y / cameraZoom < 0) {
-        if(-(del_Y / cameraZoom + 484.5) * 1.76 - del_X / cameraZoom > 32000) {
+        if(-(del_Y / cameraZoom + 484.5) * 1.76 - del_X / cameraZoom > 25000) {
             if(pre_cameraZoom != cameraZoom) {
                 cameraZoom = pre_cameraZoom
             }
