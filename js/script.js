@@ -964,8 +964,6 @@ function adjustZoom(zoomAmount, zoomFactor) {
 
         cameraZoom = Math.min(cameraZoom, MAX_ZOOM)
         cameraZoom = Math.max(cameraZoom, MIN_ZOOM)
-
-        // draw()
     }
 }
 
